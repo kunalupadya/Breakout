@@ -25,13 +25,7 @@ public class Ball {
         myView.setFitHeight(SIZE);
         myView.setFitWidth(SIZE);
         // sets initial ball position to center of stage, above paddle
-        myView.setX((int)(screenWidth/2 - myView.getBoundsInLocal().getWidth()/2));
-        myView.setY((int)(screenHeight-screenHeight/10-200));
-        System.out.print(screenHeight-screenHeight/10);
-        System.out.print(screenHeight-screenHeight/10-200);
-        double startAngle = getRandomInRange(MIN_ANGLE,MAX_ANGLE);
-        myVelocity = new Point2D(Math.cos(Math.toRadians(startAngle))*START_SPEED,
-                -Math.sin(Math.toRadians(startAngle))*START_SPEED);
+        resetBall(screenWidth,screenHeight);
     }
 
     private void setMyVelocity(double multiplier){
@@ -77,7 +71,7 @@ public class Ball {
 
     private void resetBall(double screenWidth, double screenHeight){
         myView.setX((int)(screenWidth/2));
-        myView.setY((int)(screenHeight-screenHeight/10));
+        myView.setY((int)(screenHeight-screenHeight/10)-40);
         double startAngle = getRandomInRange(MIN_ANGLE,MAX_ANGLE);
         myVelocity = new Point2D(Math.cos(Math.toRadians(startAngle))*START_SPEED,
                 -Math.sin(Math.toRadians(startAngle))*START_SPEED);

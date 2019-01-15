@@ -12,6 +12,8 @@ import javafx.scene.paint.Paint;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
+
 
 public class Main extends Application {
 
@@ -26,10 +28,15 @@ public class Main extends Application {
     public static final String PADDLE_IMAGE = "paddle.gif";
     public static final int RIGHT = 1;
     public static final int LEFT = -1;
+    public static final int[] rowsLevelOne = new int[]{SCREEN_HEIGHT/10, SCREEN_HEIGHT*2/10, SCREEN_HEIGHT*3/10};
+    public static final int[] colsLevelOne = new int[]{SCREEN_WIDTH/10, SCREEN_WIDTH*2/10, SCREEN_WIDTH*3/10, SCREEN_WIDTH*4/10,
+            SCREEN_WIDTH*5/10, SCREEN_WIDTH*6/10, SCREEN_WIDTH*7/10, SCREEN_WIDTH*8/10, SCREEN_WIDTH*9/10};
 
     public Ball myBall;
     public Paddle myPaddle;
+    public ArrayList<Block> myBlocks = new ArrayList<>();
     public boolean gameInProgress = false;
+    public int level = 0;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -57,6 +64,18 @@ public class Main extends Application {
         root.getChildren().add(myPaddle.getView());
         // respond to input
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
+        int count = 0;
+        for (int row:rowsLevelOne){
+            //sets the number of hits to break each block
+            int blockHitsToBreak = 3-count;
+            Image blockImage = getBrickImage(blockHitsToBreak);
+            for (int col:colsLevelOne){
+                Block b = new Block(blockImage,blockHitsToBreak, col,row);
+                root.getChildren().add(b.getView());
+                myBlocks.add(b);
+            }
+            count++;
+        }
 //        var image =;
 //        for (int k = 0;k<BLOCKS_PER_ROW)
 //        root.getChildren().add()
@@ -74,6 +93,16 @@ public class Main extends Application {
         if (myBall.getView().getBoundsInParent().intersects(myPaddle.getView().getBoundsInParent())){
             myBall.bounceOffPaddle();
         }
+        for (Block b:myBlocks){
+            if (myBall.getView().getBoundsInParent().intersects(b.getView().getBoundsInParent())){
+                myBall.bounceOffPaddle();
+            }
+        }
+    }
+    private Image getBrickImage(int numHitsToBreak){
+        String blockName = "brick"+String.valueOf(numHitsToBreak)+".gif";
+        var blockImage = new Image(this.getClass().getClassLoader().getResourceAsStream(blockName));
+        return blockImage;
     }
 
     private void handleKeyInput (KeyCode code){
