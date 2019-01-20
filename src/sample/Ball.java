@@ -6,22 +6,28 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.Circle;
 
 public class Ball {
     public final int START_SPEED = 8;
-    public final int SIZE = 20;
+    public final int SIZE = 10;
     public final int MIN_ANGLE = 20;
     public final int MAX_ANGLE = 160;
 
-    private ImageView myView;
+    private Circle myView;
     private Point2D myVelocity;
     private Random dice = new Random();
     private int popsPerHit = 1;
 
     public Ball(Image image, int screenWidth, int screenHeight){
-        myView = new ImageView(image);
-        myView.setFitHeight(SIZE);
-        myView.setFitWidth(SIZE);
+        myView = new Circle();
+        myView.setRadius(SIZE);
+        myView.setFill(new ImagePattern(image));
+
+//        myView = new ImageView(image);
+//        myView.setFitHeight(SIZE);
+//        myView.setFitWidth(SIZE);
         // sets initial ball position to center of stage, above paddle
         resetBall(screenWidth,screenHeight);
     }
@@ -31,14 +37,14 @@ public class Ball {
     }
 
     public void move(double elapsedTime){
-        myView.setX(myView.getX()+myVelocity.getX());
-        myView.setY(myView.getY()+myVelocity.getY());
+        myView.setCenterX(myView.getCenterX()+myVelocity.getX());
+        myView.setCenterY(myView.getCenterY()+myVelocity.getY());
     }
 
     public void bounceOffPaddle(Paddle paddle){
-        boolean toRightOfPaddle = (myView.getX()< paddle.getxPos()-myView.getBoundsInLocal().getWidth()*3/4);
-        boolean toLeftOfBlock = (myView.getX()> paddle.getxPos()-myView.getBoundsInLocal().getWidth()/4+Paddle.PADDLE_LENGTH);
-        if (toRightOfPaddle||toLeftOfBlock){
+        boolean toLeftOfPaddle = (myView.getCenterX()< paddle.getxPos()-myView.getRadius()*3/4);
+        boolean toRightOfPaddle = (myView.getCenterX()> paddle.getxPos()+myView.getRadius()*3/4+Paddle.PADDLE_LENGTH);
+        if (toRightOfPaddle||toLeftOfPaddle){
             myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
         }
         else {
@@ -47,12 +53,9 @@ public class Ball {
     }
 
     public void bounceOffBlock(Block block){
-        boolean toLeftOfBlock = (myView.getX()< block.getXPosition()-myView.getBoundsInLocal().getWidth()*3/4);
-        boolean toRightOfBlock = (myView.getX()> block.getXPosition()-myView.getBoundsInLocal().getWidth()/4+block.getBlockLength());
+        boolean toLeftOfBlock = (myView.getCenterX()< block.getXPosition()-myView.getRadius()*3/4);
+        boolean toRightOfBlock = (myView.getCenterX()> block.getXPosition()+myView.getRadius()*3/4+block.getBlockLength());
 
-        System.out.println(toLeftOfBlock);
-        System.out.println(toRightOfBlock);
-        System.out.println(" ");
 
         if (toLeftOfBlock||toRightOfBlock){
             myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
@@ -62,8 +65,14 @@ public class Ball {
         }
     }
 
-    public void bounceOffTriangle(){
-        myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
+    public void bounceOffTriangle(long timeLastTriangleHit){
+        if (System.currentTimeMillis() - timeLastTriangleHit >100) {
+            myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
+        }
+    }
+
+    public void bounceOffRotator(){
+        myVelocity = new Point2D(myVelocity.getX()+getRandomInRange(-10,10)/100.0, -myVelocity.getY());
     }
 
     public void bounceOffWalls(double screenWidth, double screenHeight) {
@@ -73,10 +82,10 @@ public class Ball {
 //        System.out.print("Y: ");
 //        System.out.println(myView.getY());
 //        System.out.println(myVelocity.getY());
-        if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()) {
+        if (myView.getCenterX() - myView.getRadius()< 0 || myView.getCenterX() + myView.getRadius() > screenWidth) {
             myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
         }
-        if (myView.getY() < 0) {
+        if (myView.getCenterY() - myView.getRadius() < 0) {
             myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
         }
     }
@@ -88,7 +97,7 @@ public class Ball {
      * @return boolean saying if
      */
     public boolean resetBallIfDead(double screenWidth, double screenHeight){
-        if (myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()) {
+        if (myView.getCenterY() +myView.getRadius() > screenHeight) {
             resetBall(screenWidth, screenHeight);
             return true;
         }
@@ -96,13 +105,12 @@ public class Ball {
     }
 
     public void changeBallSize(double multiplier) {
-        myView.setFitHeight(SIZE*multiplier);
-        myView.setFitWidth(SIZE*multiplier);
+        myView.setRadius(SIZE*multiplier);
     }
 
     private void resetBall(double screenWidth, double screenHeight){
-        myView.setX((int)(screenWidth/2));
-        myView.setY((int)(screenHeight-screenHeight/10)-40);
+        myView.setCenterX((int)(screenWidth/2));
+        myView.setCenterY((int)(screenHeight-screenHeight/10)-40);
         double startAngle = getRandomInRange(MIN_ANGLE,MAX_ANGLE);
         myVelocity = new Point2D(Math.cos(Math.toRadians(startAngle))*START_SPEED,
                 -Math.sin(Math.toRadians(startAngle))*START_SPEED);
@@ -113,6 +121,10 @@ public class Ball {
     }
 
     public Node getView(){
+        return myView;
+    }
+
+    public Circle getShape(){
         return myView;
     }
 

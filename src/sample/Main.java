@@ -11,8 +11,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -27,6 +27,7 @@ public class Main extends Application {
     public static final Paint BACKGROUND = Color.WHITE;
     public static final int SCREEN_WIDTH = 1020;
     public static final int SCREEN_HEIGHT = 720;
+    public static final int ROTATOR_SIZE = 60;
     public static final int FRAMES_PER_SECOND = 60;
     public static final int MILLISECOND_DELAY = 1000/FRAMES_PER_SECOND;
     public static final double SECOND_DELAY = 1.0/FRAMES_PER_SECOND;
@@ -56,8 +57,12 @@ public class Main extends Application {
     private ArrayList<Powerup> onscreenPowerups = new ArrayList<>();
     private ArrayList<Powerup> powerupsToRemove = new ArrayList<>();
     private ArrayList<Polygon> myTriangles = new ArrayList<>();
+    private ArrayList<Rectangle> myRotators = new ArrayList<>();
     private LinkedList<ActivePowerup> powerupTimeTracker = new LinkedList<>();
     private boolean gameInProgress = false;
+    private long lastTriangleHit;
+    private long lastRotatorHit;
+    private long lastPaddleHit;
     private int level = 0;
     private Group root;
     private Stage primaryStage;
@@ -68,6 +73,7 @@ public class Main extends Application {
         onscreenPowerups.clear();
         powerupsToRemove.clear();
         powerupTimeTracker.clear();
+        myTriangles.clear();
         gameInProgress = false;
     }
 
@@ -114,6 +120,12 @@ public class Main extends Application {
         myBall = new Ball(ballImage,width,height);
         var paddleImage = new Image(this.getClass().getClassLoader().getResourceAsStream(PADDLE_IMAGE));
         myPaddle = new Paddle(paddleImage, width, height);
+        Rectangle rotator1 = new Rectangle(width*3/4,height*7/10, ROTATOR_SIZE,ROTATOR_SIZE);
+        root.getChildren().add(rotator1);
+        Rectangle rotator2 = new Rectangle(width/4,height*7/10, ROTATOR_SIZE,ROTATOR_SIZE);
+        root.getChildren().add(rotator2);
+        myRotators.add(rotator1);
+        myRotators.add(rotator2);
         root.getChildren().add(myBall.getView());
         root.getChildren().add(myPaddle.getView());
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
@@ -156,9 +168,9 @@ public class Main extends Application {
             Image blockImage = getBrickImage(blockHitsToBreak[k]);
             createAndAddBlocks(blockImage, blockHitsToBreak[k], colsLevelThree[k], rowsLevelThree[k]);
         }
-        createAndAddTriangle(new Double[]{0.0, 100.0, 0.0, 400.0, 400.0, 400.0});
-        createAndAddTriangle(new Double[]{1020.0, 100.0, 1020.0, 400.0, 620.0, 400.0 });
-        createAndAddTriangle(new Double[]{150.0, 0.0, 870.0, 0.0, 510.0, 250.0 });
+        createAndAddTriangle(new Double[]{0.0, 250.0, 0.0, 400.0, 400.0, 400.0});
+        createAndAddTriangle(new Double[]{1020.0, 250.0, 1020.0, 400.0, 620.0, 400.0 });
+        createAndAddTriangle(new Double[]{150.0, 0.0, 870.0, 0.0, 510.0, 100.0 });
         return scene;
     }
 
@@ -177,6 +189,14 @@ public class Main extends Application {
 
     private void step(double elapsedTime){
         myBall.move(elapsedTime);
+
+//        for (Rectangle r: myRotators){
+//            var intersect = Shape.intersect(myBall.getShape(),r);
+//            if (intersect.getBoundsInLocal().getWidth() != -1){
+//                myBall.bounceOffTriangle();
+//            }
+//            r.setRotate(r.getRotate()+1);
+//        }
 
         myBall.bounceOffWalls(SCREEN_WIDTH,SCREEN_HEIGHT);
         //if ball is dead, resets ball and sets game to paused
@@ -228,7 +248,7 @@ public class Main extends Application {
         }
         powerupsToRemove.clear();
         for (ActivePowerup a:powerupTimeTracker){
-            if ((System.currentTimeMillis() - a.startTime)>10000){
+            if ((System.currentTimeMillis() - a.startTime)>15000){
                 deactivatePowerups(a);
                 powerupTimeTracker.remove(a);
             }
@@ -238,26 +258,24 @@ public class Main extends Application {
         }
 
         for (Polygon triangle:myTriangles){
-
-            var intersect = Shape.intersect(myBall.getView(),triangle)
-
-            if (triangle.intersects(myBall.getView().getBoundsInParent())){
-                myBall.bounceOffTriangle();
+            var intersect = Shape.intersect(myBall.getShape(),triangle);
+            if (intersect.getBoundsInLocal().getWidth() != -1){
+                myBall.bounceOffTriangle(lastTriangleHit);
+                lastTriangleHit = System.currentTimeMillis();
             }
         }
-
         changeSceneIfTriggered();
     }
 
     private void changeSceneIfTriggered(){
         if (myBlocks.size() == 0){
             switch (level){
+                case 0:
+                    switchScene(setupLevelOne(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
                 case 1:
                     switchScene(setupLevelTwo(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
                 case 2:
-                    switchScene(setupLevelTwo(SCREEN_WIDTH,SCREEN_WIDTH,BACKGROUND));
-//                case 3:
-//                    switchScene();
+                    switchScene(setupLevelThree(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
             }
         }
     }
@@ -283,7 +301,7 @@ public class Main extends Application {
             myBall.changeBallSize(2);
         }
         if (powerup.getPowerupType()==Block.BOMB){
-
+            // does nothing here, the powerup is activated by checking the
         }
         if (powerup.getPowerupType()==Block.DOUBLE_POPPER){
             myBall.changePopStrength(2);
