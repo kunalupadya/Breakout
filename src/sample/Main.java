@@ -14,6 +14,7 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -100,7 +101,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         //attach scene to stage and display it
         this.primaryStage = primaryStage;
-        Scene myScene = setupLevelThree(SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);
+        Scene myScene = setupInstructionsScreen(SCREEN_WIDTH, SCREEN_HEIGHT, BACKGROUND);
         primaryStage.setTitle(GAME_NAME);
         primaryStage.setScene(myScene);
         primaryStage.show();
@@ -129,6 +130,19 @@ public class Main extends Application {
         root.getChildren().add(myBall.getView());
         root.getChildren().add(myPaddle.getView());
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
+        return scene;
+    }
+
+    private Scene setupInstructionsScreen(int width, int height, Paint background){
+        clearAllStorage();
+        root = new Group();
+        Scene scene = new Scene(root, width,height,background);
+        Text titleText = new Text("Welcome to Breakout!");
+        titleText.setX(50);
+        titleText.setY(50);
+        Text instructions = new Text("The objective of the game is to pop all blocks while trying not to lose lives. If the ball hits the floor, you lose a life. To prevent this, move your paddle left and right to make the ball bounce up and break more blocks. Occasionally, a powerup will drop from a broken block. The red powerup increases the size of the ball, making it easier to bounce. The green powerup acts as a 'bomb', popping multiple adjacent blocks when you get a hit. The final powerup, the yellow powerup, is a double popper that doubles your pop rate. All powerups last for 15 seconds. This game also ");
+
+        root.getChildren().add(text);
         return scene;
     }
 
@@ -188,83 +202,84 @@ public class Main extends Application {
     }
 
     private void step(double elapsedTime){
-        myBall.move(elapsedTime);
+//        if (gameInProgress) {
+            myBall.move(elapsedTime);
 
-//        for (Rectangle r: myRotators){
-//            var intersect = Shape.intersect(myBall.getShape(),r);
-//            if (intersect.getBoundsInLocal().getWidth() != -1){
-//                myBall.bounceOffTriangle();
-//            }
-//            r.setRotate(r.getRotate()+1);
-//        }
+            for (Rectangle r : myRotators) {
+                var intersect = Shape.intersect(myBall.getShape(), r);
+                if (intersect.getBoundsInLocal().getWidth() != -1) {
+                    myBall.bounceOffRotator(lastRotatorHit);
+                }
+                r.setRotate(r.getRotate() + 1);
+            }
 
-        myBall.bounceOffWalls(SCREEN_WIDTH,SCREEN_HEIGHT);
-        //if ball is dead, resets ball and sets game to paused
-        if (myBall.resetBallIfDead(SCREEN_WIDTH,SCREEN_HEIGHT)){
-            gameInProgress = false;
-        }
-        //if ball and paddle intersect, ball bounces off
-        if (myBall.getView().getBoundsInParent().intersects(myPaddle.getView().getBoundsInParent())){
-            myBall.bounceOffPaddle(myPaddle);
-        }
+            myBall.bounceOffWalls(SCREEN_WIDTH, SCREEN_HEIGHT);
+            //if ball is dead, resets ball and sets game to paused
+            if (myBall.resetBallIfDead(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+                gameInProgress = false;
+            }
+            //if ball and paddle intersect, ball bounces off
+            if (myBall.getView().getBoundsInParent().intersects(myPaddle.getView().getBoundsInParent())) {
+                myBall.bounceOffPaddle(myPaddle);
+            }
 
-        for (Block b:myBlocks){
-            if (myBall.getView().getBoundsInParent().intersects(b.getView().getBoundsInParent())){
-                myBall.bounceOffBlock(b);
-                b.blockWasHit(myBall.getPopsPerHit());
-                if (activePowerups[Block.BOMB]){
-                    Node bomb = bombPowerup(b.getCenterxPos(),b.getCenteryPos());
-                    root.getChildren().add(bomb);
-                    System.out.println(bomb.getBoundsInParent());
-                    for (Block c:myBlocks){
-                        if ((bomb.getBoundsInParent().intersects(c.getView().getBoundsInParent()))&&(c!=b)){
-                            c.blockWasHit(myBall.getPopsPerHit());
-                            killBlockIfDead(c);
+            for (Block b : myBlocks) {
+                if (myBall.getView().getBoundsInParent().intersects(b.getView().getBoundsInParent())) {
+                    myBall.bounceOffBlock(b);
+                    b.blockWasHit(myBall.getPopsPerHit());
+                    if (activePowerups[Block.BOMB]) {
+                        Node bomb = bombPowerup(b.getCenterxPos(), b.getCenteryPos());
+                        root.getChildren().add(bomb);
+                        System.out.println(bomb.getBoundsInParent());
+                        for (Block c : myBlocks) {
+                            if ((bomb.getBoundsInParent().intersects(c.getView().getBoundsInParent())) && (c != b)) {
+                                c.blockWasHit(myBall.getPopsPerHit());
+                                killBlockIfDead(c);
+                            }
                         }
                     }
+                    killBlockIfDead(b);
                 }
-                killBlockIfDead(b);
             }
-        }
-        for (Block b: blocksToRemove){
-            myBlocks.remove(b);
-        }
-        blocksToRemove.clear();
-        for (Powerup p: onscreenPowerups){
-            p.move(elapsedTime);
-            if (p.isOffScreen(SCREEN_HEIGHT)){
-                p.killPowerup();
-                powerupsToRemove.add(p);
+            for (Block b : blocksToRemove) {
+                myBlocks.remove(b);
             }
-            if (myPaddle.getView().getBoundsInParent().intersects(p.getView().getBoundsInParent())){
-                activePowerups[p.getPowerupType()] = true;
-                powerupTimeTracker.add(new ActivePowerup(p.getPowerupType()));
-                p.killPowerup();
-                powerupsToRemove.add(p);
+            blocksToRemove.clear();
+            for (Powerup p : onscreenPowerups) {
+                p.move(elapsedTime);
+                if (p.isOffScreen(SCREEN_HEIGHT)) {
+                    p.killPowerup();
+                    powerupsToRemove.add(p);
+                }
+                if (myPaddle.getView().getBoundsInParent().intersects(p.getView().getBoundsInParent())) {
+                    activePowerups[p.getPowerupType()] = true;
+                    powerupTimeTracker.add(new ActivePowerup(p.getPowerupType()));
+                    p.killPowerup();
+                    powerupsToRemove.add(p);
+                }
             }
-        }
-        for (Powerup p: powerupsToRemove){
-            onscreenPowerups.remove(p);
-        }
-        powerupsToRemove.clear();
-        for (ActivePowerup a:powerupTimeTracker){
-            if ((System.currentTimeMillis() - a.startTime)>15000){
-                deactivatePowerups(a);
-                powerupTimeTracker.remove(a);
+            for (Powerup p : powerupsToRemove) {
+                onscreenPowerups.remove(p);
             }
-            else{
-                activatePowerups(a);
+            powerupsToRemove.clear();
+            for (ActivePowerup a : powerupTimeTracker) {
+                if ((System.currentTimeMillis() - a.startTime) > 15000) {
+                    deactivatePowerups(a);
+                    powerupTimeTracker.remove(a);
+                } else {
+                    activatePowerups(a);
+                }
             }
-        }
 
-        for (Polygon triangle:myTriangles){
-            var intersect = Shape.intersect(myBall.getShape(),triangle);
-            if (intersect.getBoundsInLocal().getWidth() != -1){
-                myBall.bounceOffTriangle(lastTriangleHit);
-                lastTriangleHit = System.currentTimeMillis();
+            for (Polygon triangle : myTriangles) {
+                var intersect = Shape.intersect(myBall.getShape(), triangle);
+                if (intersect.getBoundsInLocal().getWidth() != -1) {
+                    myBall.bounceOffTriangle(lastTriangleHit);
+                    lastTriangleHit = System.currentTimeMillis();
+                }
             }
+            changeSceneIfTriggered();
         }
-        changeSceneIfTriggered();
     }
 
     private void changeSceneIfTriggered(){

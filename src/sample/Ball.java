@@ -71,8 +71,10 @@ public class Ball {
         }
     }
 
-    public void bounceOffRotator(){
-        myVelocity = new Point2D(myVelocity.getX()+getRandomInRange(-10,10)/100.0, -myVelocity.getY());
+    public void bounceOffRotator(long timeLastRotatorHit){
+        if (System.currentTimeMillis() - timeLastRotatorHit >100) {
+            myVelocity = new Point2D(myVelocity.getX() + getRandomInRange(-10, 10) / 100.0, -myVelocity.getY());
+        }
     }
 
     public void bounceOffWalls(double screenWidth, double screenHeight) {
