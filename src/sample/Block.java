@@ -42,8 +42,10 @@ public class Block {
         myView.setImage(image);
     }
 
-    public void blockWasHit(int popStrength){
+    public int blockWasHit(int popStrength){
+        int numPopped = Math.min(popStrength, hitsLeftToBreakBlock);
         hitsLeftToBreakBlock-=popStrength;
+        return numPopped;
     }
 
     public boolean isBlockDead(){

@@ -73,7 +73,7 @@ public class Ball {
 
     public void bounceOffRotator(long timeLastRotatorHit){
         if (System.currentTimeMillis() - timeLastRotatorHit >100) {
-            myVelocity = new Point2D(myVelocity.getX() + getRandomInRange(-10, 10) / 100.0, -myVelocity.getY());
+            myVelocity = new Point2D(-myVelocity.getX(), -myVelocity.getY());
         }
     }
 
@@ -87,7 +87,7 @@ public class Ball {
         if (myView.getCenterX() - myView.getRadius()< 0 || myView.getCenterX() + myView.getRadius() > screenWidth) {
             myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
         }
-        if (myView.getCenterY() - myView.getRadius() < 0) {
+        if (myView.getCenterY() - myView.getRadius() <= 0) {
             myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
         }
     }
@@ -101,6 +101,7 @@ public class Ball {
     public boolean resetBallIfDead(double screenWidth, double screenHeight){
         if (myView.getCenterY() +myView.getRadius() > screenHeight) {
             resetBall(screenWidth, screenHeight);
+
             return true;
         }
         return false;

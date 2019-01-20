@@ -14,6 +14,9 @@ import javafx.scene.paint.Paint;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -49,7 +52,7 @@ public class Main extends Application {
             SCREEN_HEIGHT*5/10, SCREEN_HEIGHT*4/10,SCREEN_HEIGHT*3/10, SCREEN_HEIGHT*2/10, SCREEN_HEIGHT/10};
     public static final int[] colsLevelThree = new int[]{SCREEN_WIDTH/10, SCREEN_WIDTH*2/10, SCREEN_WIDTH*3/10, SCREEN_WIDTH*4/10,
             SCREEN_WIDTH*5/10, SCREEN_WIDTH*6/10, SCREEN_WIDTH*7/10, SCREEN_WIDTH*8/10, SCREEN_WIDTH*9/10};
-
+    public static final int NUM_LIVES = 5;
 
     private Ball myBall;
     private Paddle myPaddle;
@@ -65,10 +68,14 @@ public class Main extends Application {
     private long lastRotatorHit;
     private long lastPaddleHit;
     private int level = 0;
+    private int multiplier = 1;
+    private int score;
+    private int lives = NUM_LIVES;
     private Group root;
     private Stage primaryStage;
 
     private void clearAllStorage(){
+        myRotators.clear();
         myBlocks.clear();
         blocksToRemove.clear();
         onscreenPowerups.clear();
@@ -138,19 +145,22 @@ public class Main extends Application {
         root = new Group();
         Scene scene = new Scene(root, width,height,background);
         Text titleText = new Text("Welcome to Breakout!");
-        titleText.setX(50);
+        titleText.setX(width/2-250);
         titleText.setY(50);
-        Text instructions = new Text("The objective of the game is to pop all blocks while trying not to lose lives. If the ball hits the floor, you lose a life. To prevent this, move your paddle left and right to make the ball bounce up and break more blocks. Occasionally, a powerup will drop from a broken block. The red powerup increases the size of the ball, making it easier to bounce. The green powerup acts as a 'bomb', popping multiple adjacent blocks when you get a hit. The final powerup, the yellow powerup, is a double popper that doubles your pop rate. All powerups last for 15 seconds. This game also ");
-
-        root.getChildren().add(text);
+        titleText.setFont(Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 40));
+        Text instructions = new Text("The objective of the game is to pop all blocks while trying not to lose lives. If the ball hits the floor, you lose a life. To prevent this, move your paddle left and right to make the ball bounce up and break more blocks. Occasionally, a powerup will drop from a broken block. The red powerup increases the size of the ball, making it easier to bounce. The green powerup acts as a 'bomb', popping multiple adjacent blocks when you get a hit. The final powerup, the yellow powerup, is a double popper that doubles your pop rate. All powerups last for 15 seconds. This game also features multiple cheat keys. To instantly break all blocks, hit 1. To toggle increased paddle movement, hit 2. To activate powerups, hit 3,4,or 5 respectively. In terms of scoring, this game has a multiplier - the more blocks you pop without dying, the higher your multiplier. Have fun!\n \nTo play, click anywhere onscreen.");
+        instructions.setX(width/8.0);
+        instructions.setY(height/6.0);
+        instructions.setFont(Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25));
+        instructions.setWrappingWidth(765);
+        root.getChildren().add(titleText);
+        root.getChildren().add(instructions);
+        scene.setOnMouseClicked(e -> changeSceneIfTriggered());
         return scene;
     }
 
     private Scene setupLevelOne(int width, int height, Paint background){
         Scene scene = initializeScene(width,height,background);
-        // respond to input
-
-//        scene.setOnMouseClicked(e -> switchScene());
         // setup blocks
         int count = 0;
         for (int row:rowsLevelOne){
@@ -202,95 +212,100 @@ public class Main extends Application {
     }
 
     private void step(double elapsedTime){
-//        if (gameInProgress) {
-            myBall.move(elapsedTime);
+        myBall.move(elapsedTime);
 
-            for (Rectangle r : myRotators) {
-                var intersect = Shape.intersect(myBall.getShape(), r);
-                if (intersect.getBoundsInLocal().getWidth() != -1) {
-                    myBall.bounceOffRotator(lastRotatorHit);
-                }
-                r.setRotate(r.getRotate() + 1);
+        for (Rectangle r : myRotators) {
+            var intersect = Shape.intersect(myBall.getShape(), r);
+            if (intersect.getBoundsInLocal().getWidth() != -1) {
+                myBall.bounceOffRotator(lastRotatorHit);
             }
+            r.setRotate(r.getRotate() + 1);
+        }
 
-            myBall.bounceOffWalls(SCREEN_WIDTH, SCREEN_HEIGHT);
-            //if ball is dead, resets ball and sets game to paused
-            if (myBall.resetBallIfDead(SCREEN_WIDTH, SCREEN_HEIGHT)) {
-                gameInProgress = false;
-            }
-            //if ball and paddle intersect, ball bounces off
-            if (myBall.getView().getBoundsInParent().intersects(myPaddle.getView().getBoundsInParent())) {
-                myBall.bounceOffPaddle(myPaddle);
-            }
+        myBall.bounceOffWalls(SCREEN_WIDTH, SCREEN_HEIGHT);
+        //if ball is dead, resets ball and sets game to paused
+        if (myBall.resetBallIfDead(SCREEN_WIDTH, SCREEN_HEIGHT)) {
+            multiplier = 1;
+            lives -= 1;
+        }
+        //if ball and paddle intersect, ball bounces off
+        if (myBall.getView().getBoundsInParent().intersects(myPaddle.getView().getBoundsInParent())) {
+            myBall.bounceOffPaddle(myPaddle);
+        }
 
-            for (Block b : myBlocks) {
-                if (myBall.getView().getBoundsInParent().intersects(b.getView().getBoundsInParent())) {
-                    myBall.bounceOffBlock(b);
-                    b.blockWasHit(myBall.getPopsPerHit());
-                    if (activePowerups[Block.BOMB]) {
-                        Node bomb = bombPowerup(b.getCenterxPos(), b.getCenteryPos());
-                        root.getChildren().add(bomb);
-                        System.out.println(bomb.getBoundsInParent());
-                        for (Block c : myBlocks) {
-                            if ((bomb.getBoundsInParent().intersects(c.getView().getBoundsInParent())) && (c != b)) {
-                                c.blockWasHit(myBall.getPopsPerHit());
-                                killBlockIfDead(c);
-                            }
+        for (Block b : myBlocks) {
+            if (myBall.getView().getBoundsInParent().intersects(b.getView().getBoundsInParent())) {
+                myBall.bounceOffBlock(b);
+                score += b.blockWasHit(myBall.getPopsPerHit())*multiplier;
+                if (activePowerups[Block.BOMB]) {
+                    Node bomb = bombPowerup(b.getCenterxPos(), b.getCenteryPos());
+                    root.getChildren().add(bomb);
+                    System.out.println(bomb.getBoundsInParent());
+                    for (Block c : myBlocks) {
+                        if ((bomb.getBoundsInParent().intersects(c.getView().getBoundsInParent())) && (c != b)) {
+                            score += c.blockWasHit(myBall.getPopsPerHit())*multiplier;
+                            killBlockIfDead(c);
                         }
                     }
-                    killBlockIfDead(b);
                 }
+                killBlockIfDead(b);
             }
-            for (Block b : blocksToRemove) {
-                myBlocks.remove(b);
-            }
-            blocksToRemove.clear();
-            for (Powerup p : onscreenPowerups) {
-                p.move(elapsedTime);
-                if (p.isOffScreen(SCREEN_HEIGHT)) {
-                    p.killPowerup();
-                    powerupsToRemove.add(p);
-                }
-                if (myPaddle.getView().getBoundsInParent().intersects(p.getView().getBoundsInParent())) {
-                    activePowerups[p.getPowerupType()] = true;
-                    powerupTimeTracker.add(new ActivePowerup(p.getPowerupType()));
-                    p.killPowerup();
-                    powerupsToRemove.add(p);
-                }
-            }
-            for (Powerup p : powerupsToRemove) {
-                onscreenPowerups.remove(p);
-            }
-            powerupsToRemove.clear();
-            for (ActivePowerup a : powerupTimeTracker) {
-                if ((System.currentTimeMillis() - a.startTime) > 15000) {
-                    deactivatePowerups(a);
-                    powerupTimeTracker.remove(a);
-                } else {
-                    activatePowerups(a);
-                }
-            }
-
-            for (Polygon triangle : myTriangles) {
-                var intersect = Shape.intersect(myBall.getShape(), triangle);
-                if (intersect.getBoundsInLocal().getWidth() != -1) {
-                    myBall.bounceOffTriangle(lastTriangleHit);
-                    lastTriangleHit = System.currentTimeMillis();
-                }
-            }
-            changeSceneIfTriggered();
         }
+        for (Block b : blocksToRemove) {
+            myBlocks.remove(b);
+        }
+        blocksToRemove.clear();
+        for (Powerup p : onscreenPowerups) {
+            p.move(elapsedTime);
+            if (p.isOffScreen(SCREEN_HEIGHT)) {
+                p.killPowerup();
+                powerupsToRemove.add(p);
+            }
+            if (myPaddle.getView().getBoundsInParent().intersects(p.getView().getBoundsInParent())) {
+                activePowerups[p.getPowerupType()] = true;
+                powerupTimeTracker.add(new ActivePowerup(p.getPowerupType()));
+                p.killPowerup();
+                powerupsToRemove.add(p);
+            }
+        }
+        for (Powerup p : powerupsToRemove) {
+            onscreenPowerups.remove(p);
+        }
+        powerupsToRemove.clear();
+        for (ActivePowerup a : powerupTimeTracker) {
+            if ((System.currentTimeMillis() - a.startTime) > 15000) {
+                deactivatePowerups(a);
+                powerupTimeTracker.remove(a);
+            } else {
+                activatePowerups(a);
+            }
+        }
+
+        for (Polygon triangle : myTriangles) {
+            var intersect = Shape.intersect(myBall.getShape(), triangle);
+            if (intersect.getBoundsInLocal().getWidth() != -1) {
+                myBall.bounceOffTriangle(lastTriangleHit);
+                lastTriangleHit = System.currentTimeMillis();
+            }
+        }
+        changeSceneIfTriggered();
     }
 
     private void changeSceneIfTriggered(){
         if (myBlocks.size() == 0){
-            switch (level){
-                case 0:
-                    switchScene(setupLevelOne(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
-                case 1:
-                    switchScene(setupLevelTwo(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
-                case 2:
-                    switchScene(setupLevelThree(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
+            System.out.println(level);
+            if (level == 0){
+                gameInProgress = true;
+                switchScene(setupLevelOne(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
+                level +=1;
+            }
+            else if (level == 1){
+                switchScene(setupLevelTwo(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
+                level +=1;
+            }
+            else if (level == 2){
+                switchScene(setupLevelThree(SCREEN_WIDTH,SCREEN_HEIGHT,BACKGROUND));
+                level +=1;
             }
         }
     }
