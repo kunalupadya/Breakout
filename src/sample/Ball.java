@@ -13,12 +13,10 @@ public class Ball {
     public final int MIN_ANGLE = 20;
     public final int MAX_ANGLE = 160;
 
-
-
-
     private ImageView myView;
     private Point2D myVelocity;
     private Random dice = new Random();
+    private int popsPerHit = 1;
 
     public Ball(Image image, int screenWidth, int screenHeight){
         myView = new ImageView(image);
@@ -37,7 +35,34 @@ public class Ball {
         myView.setY(myView.getY()+myVelocity.getY());
     }
 
-    public void bounceOffPaddle(){
+    public void bounceOffPaddle(Paddle paddle){
+        boolean toRightOfPaddle = (myView.getX()< paddle.getxPos()-myView.getBoundsInLocal().getWidth()*3/4);
+        boolean toLeftOfBlock = (myView.getX()> paddle.getxPos()-myView.getBoundsInLocal().getWidth()/4+Paddle.PADDLE_LENGTH);
+        if (toRightOfPaddle||toLeftOfBlock){
+            myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
+        }
+        else {
+            myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
+        }
+    }
+
+    public void bounceOffBlock(Block block){
+        boolean toLeftOfBlock = (myView.getX()< block.getXPosition()-myView.getBoundsInLocal().getWidth()*3/4);
+        boolean toRightOfBlock = (myView.getX()> block.getXPosition()-myView.getBoundsInLocal().getWidth()/4+block.getBlockLength());
+
+        System.out.println(toLeftOfBlock);
+        System.out.println(toRightOfBlock);
+        System.out.println(" ");
+
+        if (toLeftOfBlock||toRightOfBlock){
+            myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
+        }
+        else {
+            myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
+        }
+    }
+
+    public void bounceOffTriangle(){
         myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
     }
 
@@ -56,7 +81,13 @@ public class Ball {
         }
     }
 
-    public boolean isBallDead(double screenWidth, double screenHeight){
+    /**
+     * resets the ball if dead, returns whether or not the ball was dead
+     * @param screenWidth the width of the screen
+     * @param screenHeight the height of the screen
+     * @return boolean saying if
+     */
+    public boolean resetBallIfDead(double screenWidth, double screenHeight){
         if (myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()) {
             resetBall(screenWidth, screenHeight);
             return true;
@@ -77,8 +108,16 @@ public class Ball {
                 -Math.sin(Math.toRadians(startAngle))*START_SPEED);
     }
 
+    public void changePopStrength(int popStrength){
+        popsPerHit = popStrength;
+    }
+
     public Node getView(){
         return myView;
+    }
+
+    public int getPopsPerHit() {
+        return popsPerHit;
     }
 
     /**

@@ -1,27 +1,23 @@
 package sample;
 
-import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 public class Paddle {
-    private final int SIZE = 10;
-    private final int PADDLE_WIDTH = SIZE;
+    public static final int PADDLE_HEIGHT = 10;
+    public static final int PADDLE_LENGTH = PADDLE_HEIGHT*8;
 
-    private int PADDLE_LENGTH = SIZE*8;
     private int PADDLE_SPEED = 50;
 
     private ImageView myView;
-    private Point2D myVelocity;
 
     public Paddle (Image image, int screenWidth, int screenHeight){
         myView = new ImageView(image);
-        myView.setFitHeight(PADDLE_WIDTH);
+        myView.setFitHeight(PADDLE_HEIGHT);
         myView.setFitWidth(PADDLE_LENGTH);
         myView.setX((int)(screenWidth/2-myView.getBoundsInLocal().getWidth()/2));
         myView.setY((int)(screenHeight-screenHeight/10));
-
     }
 
     /**
@@ -34,5 +30,13 @@ public class Paddle {
 
     public Node getView(){
         return myView;
+    }
+
+    public double getxPos() {
+        return myView.getX();
+    }
+
+    public double getyPos() {
+        return myView.getY();
     }
 }
