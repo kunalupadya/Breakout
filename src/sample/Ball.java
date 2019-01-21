@@ -26,7 +26,7 @@ public class Ball {
 
 
     /**
-     *
+     * This constructor makes the ball appear in the center of the screen, above the paddle height. It shoots at a random angle
      * @param image
      * @param screenWidth
      * @param screenHeight
@@ -43,11 +43,19 @@ public class Ball {
         myVelocity = new Point2D(myVelocity.getX()*multiplier, myVelocity.getY()*multiplier);
     }
 
+    /**
+     * moves the ball based on the velocity of the ball.
+     * @param elapsedTime
+     */
     public void move(double elapsedTime){
         myView.setCenterX(myView.getCenterX()+myVelocity.getX());
         myView.setCenterY(myView.getCenterY()+myVelocity.getY());
     }
 
+    /**
+     * bounce off the paddle, used when the ball hits the paddle in any fashion.
+     * @param paddle
+     */
     public void bounceOffPaddle(Paddle paddle){
         boolean toLeftOfPaddle = (myView.getCenterX()< paddle.getxPos()-myView.getRadius()*3/4);
         boolean toRightOfPaddle = (myView.getCenterX()> paddle.getxPos()+myView.getRadius()*3/4+Paddle.PADDLE_LENGTH);
@@ -59,6 +67,10 @@ public class Ball {
         }
     }
 
+    /**
+     * bounce off the block, used when the block hits the ball in any fashion
+     * @param block
+     */
     public void bounceOffBlock(Block block){
         boolean toLeftOfBlock = (myView.getCenterX()< block.getXPosition()-myView.getRadius()*3/4);
         boolean toRightOfBlock = (myView.getCenterX()> block.getXPosition()+myView.getRadius()*3/4+block.getBlockLength());
@@ -72,25 +84,34 @@ public class Ball {
         }
     }
 
+    /**
+     * bounce off the triangle, used when the ball touches the triangle
+     * @param timeLastTriangleHit
+     */
     public void bounceOffTriangle(long timeLastTriangleHit){
         if (System.currentTimeMillis() - timeLastTriangleHit >100) {
             myVelocity = new Point2D(myVelocity.getX(), -myVelocity.getY());
         }
     }
 
+    /**
+     * bounce off the rotator, reverse in the direction the ball came from, used when the ball touches the rotator
+     * @param timeLastRotatorHit
+     */
     public void bounceOffRotator(long timeLastRotatorHit){
         if (System.currentTimeMillis() - timeLastRotatorHit >100) {
             myVelocity = new Point2D(-myVelocity.getX(), -myVelocity.getY());
         }
     }
 
+    /**
+     * bounces off walls, used when the ball touches the wall
+     * @param screenWidth
+     * @param screenHeight
+     */
     public void bounceOffWalls(double screenWidth, double screenHeight) {
         // collide all bouncers against the walls
-//        System.out.print("X: ");
-//        System.out.println(myView.getX());
-//        System.out.print("Y: ");
-//        System.out.println(myView.getY());
-//        System.out.println(myVelocity.getY());
+
         if (myView.getCenterX() - myView.getRadius()< 0 || myView.getCenterX() + myView.getRadius() > screenWidth) {
             myVelocity = new Point2D(-myVelocity.getX(), myVelocity.getY());
         }
@@ -114,10 +135,15 @@ public class Ball {
         return false;
     }
 
+    /**
+     * changes the ball size by a multiplier, used when the increase ball size powerup is activated and deactivated
+     * @param multiplier
+     */
     public void changeBallSize(double multiplier) {
         myView.setRadius(SIZE*multiplier);
     }
 
+    
     private void resetBall(double screenWidth, double screenHeight){
         myView.setCenterX((int)(screenWidth/2));
         myView.setCenterY((int)(screenHeight-screenHeight/10)-40);

@@ -26,13 +26,13 @@ Key/Mouse inputs: This program takes a mouse input to start the game, takes left
 
 Cheat keys:3 to increase ball size, 4 to have the bomb powerup, and 5 to activate double popper
 
-Known Bugs: The ball sometimes gets stuck on the triangles and walls (an increase in ball size can cause this). The ball also sometimes instantly breaks a block when it hits from the side. I have implemented logic to make the ball bounce properly, but it still fails sometimes. When this happens, the ball gets stuck in the block, and pops the block repeatedly. 
+Known Bugs: The ball sometimes gets stuck on the triangles and walls (an increase in ball size can cause this). The ball also sometimes instantly breaks a block when it hits from the side. I have implemented logic to make the ball bounce properly, but it still fails sometimes. When this happens, the ball gets stuck in the block, and pops the block repeatedly. Also, the final screen (game over) sometimes fails unexpectedly. I am unsure as to why this is, but it flashes and takes a while to activate. In this situation, you just have to hit the spacebar a few times and wait a second.
 
-Extra credit: I added rotators to reverse the direction of the ball, and a score multiplier to increase the score of the 
+Extra credit: I added rotators to reverse the direction of the ball, and a score multiplier to increase the score when you have gone a while without dying. 
 
 
 ### Notes
 
 
 ### Impressions
-
+Generally, the game works quite well. The scene switches very well, and each individual level is well designed. The third level is quite difficult, and I like the way it plays. One of the main issues with the game is the predictability of bounces, this leads to situations with the ball bouncing off of rotators in an infinite loop. If given more time, I would fix this by slightly randomizing the bounces off of rotators. I would also fix the issues with the ball incorrectly bouncing off of blocks on the sides.
