@@ -143,7 +143,11 @@ public class Ball {
         myView.setRadius(SIZE*multiplier);
     }
 
-    
+    /**
+     * resets the ball location when the ball dies
+     * @param screenWidth
+     * @param screenHeight
+     */
     private void resetBall(double screenWidth, double screenHeight){
         myView.setCenterX((int)(screenWidth/2));
         myView.setCenterY((int)(screenHeight-screenHeight/10)-40);
@@ -152,18 +156,34 @@ public class Ball {
                 -Math.sin(Math.toRadians(startAngle))*START_SPEED);
     }
 
+    /**
+     * change changes the number of blocks that are popped with a hit
+     * @param popStrength
+     */
     public void changePopStrength(int popStrength){
         popsPerHit = popStrength;
     }
 
+    /**
+     * returns a node object of the ball
+     * @return
+     */
     public Node getView(){
         return myView;
     }
 
+    /**
+     * returns a circle shape object of the ball for use with triangle object collision detection
+     * @return
+     */
     public Circle getShape(){
         return myView;
     }
 
+    /**
+     * gets the number of pops per hit of the ball, used when the block is hit
+     * @return
+     */
     public int getPopsPerHit() {
         return popsPerHit;
     }
