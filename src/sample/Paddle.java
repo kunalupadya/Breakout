@@ -40,18 +40,26 @@ public class Paddle {
         myView.setX(myView.getX()+ paddleSpeed *direction);
     }
 
+    /**
+     * gets the node object for the paddle
+     * @return
+     */
     public Node getView(){
         return myView;
     }
 
+    /**
+     *gets the x position of the paddle, used for object detection and collision
+     * @return
+     */
     public double getxPos() {
         return myView.getX();
     }
 
-    public double getyPos() {
-        return myView.getY();
-    }
-
+    /**
+     * sets the speed of the paddle's movement
+     * @param paddleSpeed
+     */
     public void setPaddleSpeed(int paddleSpeed) {
         this.paddleSpeed = paddleSpeed;
     }
