@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 
 /**
  * the paddle object that is used to bounce the ball
+ * @author Kunal Upadya
  */
 public class Paddle {
     public static final int PADDLE_HEIGHT = 10;

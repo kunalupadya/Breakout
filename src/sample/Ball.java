@@ -12,6 +12,8 @@ import javafx.scene.shape.Circle;
 
 /**
  * Creates a ball class to control the position and qualities of the ball
+ *
+ * @author Kunal Upadya
  */
 public class Ball {
     public final int START_SPEED = 8;

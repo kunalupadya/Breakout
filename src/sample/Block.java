@@ -5,6 +5,11 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.util.Random;
 
+/**
+ * the block class, used to define the breakable objects
+ *
+ * @author Kunal Upadya
+ */
 public class Block {
 
     private ImageView myView;

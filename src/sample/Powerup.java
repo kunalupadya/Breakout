@@ -11,6 +11,7 @@ import static sample.Block.DOUBLE_POPPER;
 
 /**
  * the powerup class is used to define the powerups as they move on the screen
+ * @author Kunal Upadya
  */
 public class Powerup {
 
