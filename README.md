@@ -31,8 +31,5 @@ Known Bugs: The ball sometimes gets stuck on the triangles and walls (an increas
 Extra credit: I added rotators to reverse the direction of the ball, and a score multiplier to increase the score when you have gone a while without dying. 
 
 
-### Notes
-
-
 ### Impressions
 Generally, the game works quite well. The scene switches very well, and each individual level is well designed. The third level is quite difficult, and I like the way it plays. One of the main issues with the game is the predictability of bounces, this leads to situations with the ball bouncing off of rotators in an infinite loop. If given more time, I would fix this by slightly randomizing the bounces off of rotators. I would also fix the issues with the ball incorrectly bouncing off of blocks on the sides.
