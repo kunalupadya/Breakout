@@ -9,6 +9,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 
+
+/**
+ * Creates a ball class to control the position and qualities of the ball
+ */
 public class Ball {
     public final int START_SPEED = 8;
     public final int SIZE = 10;
@@ -20,14 +24,17 @@ public class Ball {
     private Random dice = new Random();
     private int popsPerHit = 1;
 
+
+    /**
+     *
+     * @param image
+     * @param screenWidth
+     * @param screenHeight
+     */
     public Ball(Image image, int screenWidth, int screenHeight){
         myView = new Circle();
         myView.setRadius(SIZE);
         myView.setFill(new ImagePattern(image));
-
-//        myView = new ImageView(image);
-//        myView.setFitHeight(SIZE);
-//        myView.setFitWidth(SIZE);
         // sets initial ball position to center of stage, above paddle
         resetBall(screenWidth,screenHeight);
     }

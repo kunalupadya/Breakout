@@ -24,7 +24,12 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-
+/**
+ * the main class used to run the game, handles all the objects used to make up each scene as well
+ * as some instance variables to keep track of game aspects, such as lives and powerups
+ *
+ * @author Kunal Upadya
+ */
 public class Main extends Application {
 
     public static final String GAME_NAME = "Breakout";
@@ -82,7 +87,7 @@ public class Main extends Application {
     private boolean bombPowerupActive = false;
 
     /**
-     *
+     * stores the powerups while they are active to keep track of their start times and powerup types
      */
     public class ActivePowerup{
         int powerupType;
@@ -100,9 +105,7 @@ public class Main extends Application {
         }
     }
 
-    /**
-     * clears the variables in storage that store the objects onscreen, as well as active powerups
-     */
+
     private void clearAllStorage(){
         myRotators.clear();
         myBlocks.clear();
@@ -114,7 +117,7 @@ public class Main extends Application {
     }
 
     /**
-     * starts the animation
+     * starts the animation and determines how it will be updated
      * @param primaryStage the stage used to seat all animations
      * @throws Exception
      */
@@ -134,13 +137,6 @@ public class Main extends Application {
         animation.play();
     }
 
-    /**
-     * initializes
-     * @param width
-     * @param height
-     * @param background
-     * @return
-     */
     private Scene initializeScene(int width, int height, Paint background){
         clearAllStorage();
         root = new Group();
@@ -589,6 +585,11 @@ public class Main extends Application {
         primaryStage.setScene(scene);
     }
 
+
+    /**
+     * runs the program
+     * @param args
+     */
     public static void main(String[] args) {
         launch(args);
     }
