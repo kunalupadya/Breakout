@@ -117,6 +117,10 @@ public class Block {
         return myView;
     }
 
+    /**
+     * get the number of hits left to break the block, in order to change the image.
+     * @return
+     */
     public int getHitsLeftToBreakBlock() {
         return hitsLeftToBreakBlock;
     }
