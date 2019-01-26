@@ -38,7 +38,7 @@ public class Ball {
         myView = new Circle();
         myView.setRadius(SIZE);
         myView.setFill(new ImagePattern(image));
-        // sets initial ball position to center of stage, above paddle
+        // sets initial ball position to center of stage, above paddle, with a random velocity
         resetBall(screenWidth,screenHeight);
     }
 

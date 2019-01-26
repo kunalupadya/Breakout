@@ -13,7 +13,7 @@ import java.util.Random;
 public class Block {
 
     private ImageView myView;
-    public int hitsLeftToBreakBlock;
+    private int hitsLeftToBreakBlock;
     private int xPos;
     private int yPos;
     private Random dice = new Random();
@@ -80,7 +80,7 @@ public class Block {
     /**
      * make the block invisible and return its powerup, if any
      */
-    public int popBlock(){
+    public int popBlockAndGetPowerup(){
         myView.setImage(null);
         return powerup;
     }
@@ -115,6 +115,10 @@ public class Block {
      */
     public Node getView(){
         return myView;
+    }
+
+    public int getHitsLeftToBreakBlock() {
+        return hitsLeftToBreakBlock;
     }
 
     /**

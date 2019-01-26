@@ -454,7 +454,7 @@ public class Main extends Application {
     }
     private void killBlockIfDead(Block b){
         if (b.isBlockDead()){
-            int powerupType = b.popBlock();
+            int powerupType = b.popBlockAndGetPowerup();
             if (powerupType <3){
                 PowerupSprite newestPowerupSprite = new PowerupSprite(getPowerupImage(powerupType),b.getCenterxPos(),b.getCenteryPos(),powerupType);
                 root.getChildren().add(newestPowerupSprite.getView());
@@ -463,7 +463,7 @@ public class Main extends Application {
             blocksToRemove.add(b);
         }
         else{
-            b.changeImage(getBrickImage(b.hitsLeftToBreakBlock));
+            b.changeImage(getBrickImage(b.getHitsLeftToBreakBlock()));
         }
     }
 
