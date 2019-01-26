@@ -3,7 +3,7 @@ game
 
 This project implements the game of Breakout.
 
-Name: Kunal Upadya (ku16)
+Name: Kunal Upadya (ku16 )
 
 ### Timeline
 

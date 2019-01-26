@@ -5,17 +5,17 @@ import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
-import static sample.Block.INCREASE_BALL_SIZE;
-import static sample.Block.BOMB;
-import static sample.Block.DOUBLE_POPPER;
 
 /**
  * the powerup class is used to define the powerups as they move on the screen
  * @author Kunal Upadya
  */
-public class Powerup {
+public class PowerupSprite {
 
     public static final int SIZE = 20;
+    public static final int INCREASE_BALL_SIZE = 0;
+    public static final int BOMB = 1;
+    public static final int DOUBLE_POPPER = 2;
 
 
     private int powerupType;
@@ -29,7 +29,7 @@ public class Powerup {
      * @param yPos
      * @param powerupType
      */
-    public Powerup(Image image, int xPos, int yPos, int powerupType){
+    public PowerupSprite(Image image, int xPos, int yPos, int powerupType){
         myView = new ImageView(image);
         myView.setFitHeight(SIZE);
         myView.setFitWidth(SIZE);

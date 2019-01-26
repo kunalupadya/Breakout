@@ -5,7 +5,6 @@ import java.util.Random;
 import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 
@@ -16,10 +15,12 @@ import javafx.scene.shape.Circle;
  * @author Kunal Upadya
  */
 public class Ball {
-    public final int START_SPEED = 8;
-    public final int SIZE = 10;
-    public final int MIN_ANGLE = 20;
-    public final int MAX_ANGLE = 160;
+    public static final int START_SPEED = 8;
+    public static final int SIZE = 10;
+    public static final int MIN_ANGLE = 20;
+    public static final int MAX_ANGLE = 160;
+    public static final int SMALL_BALL_SIZE = 1;
+    public static final int BIG_BALL_SIZE = 2;
 
     private Circle myView;
     private Point2D myVelocity;
@@ -138,11 +139,12 @@ public class Ball {
     }
 
     /**
-     * changes the ball size by a multiplier, used when the increase ball size powerup is activated and deactivated
-     * @param multiplier
+     * changes the ball size to a specified multiplier of its original size, used when the increase ball size powerup is activated and deactivated
+     * Use NORMAL_BALL_SIZE and BIG_BALL_SIZE as the ballSize param
+     * @param ballSize
      */
-    public void changeBallSize(double multiplier) {
-        myView.setRadius(SIZE*multiplier);
+    public void changeBallSize(double ballSize) {
+        myView.setRadius(SIZE*ballSize);
     }
 
     /**
@@ -153,7 +155,7 @@ public class Ball {
     private void resetBall(double screenWidth, double screenHeight){
         myView.setCenterX((int)(screenWidth/2));
         myView.setCenterY((int)(screenHeight-screenHeight/10)-40);
-        double startAngle = getRandomInRange(MIN_ANGLE,MAX_ANGLE);
+        double startAngle = getRandomAngleInRange(MIN_ANGLE,MAX_ANGLE);
         myVelocity = new Point2D(Math.cos(Math.toRadians(startAngle))*START_SPEED,
                 -Math.sin(Math.toRadians(startAngle))*START_SPEED);
     }
@@ -196,7 +198,7 @@ public class Ball {
      * @param max
      * @return an int
      */
-    private int getRandomInRange(int min, int max){
+    private int getRandomAngleInRange(int min, int max){
         return min + dice.nextInt(max - min) + 1;
     }
 }

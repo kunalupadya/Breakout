@@ -21,10 +21,6 @@ public class Block {
 
     // Powerups
 
-    public static final int INCREASE_BALL_SIZE = 0;
-    public static final int BOMB = 1;
-    public static final int DOUBLE_POPPER = 2;
-
     /**
      * Creates a breakable block
      * @param image the image for the block, based on its strength

@@ -58,13 +58,14 @@ public class Main extends Application {
     public static final int[] colsLevelThree = new int[]{SCREEN_WIDTH/10, SCREEN_WIDTH*2/10, SCREEN_WIDTH*3/10, SCREEN_WIDTH*4/10,
             SCREEN_WIDTH*5/10, SCREEN_WIDTH*6/10, SCREEN_WIDTH*7/10, SCREEN_WIDTH*8/10, SCREEN_WIDTH*9/10};
     public static final int NUM_LIVES = 5;
+    public static final int NUM_LEVELS = 3;
 
     private Ball myBall;
     private Paddle myPaddle;
     private ArrayList<Block> myBlocks = new ArrayList<>();
     private ArrayList<Block> blocksToRemove = new ArrayList<>();
-    private ArrayList<Powerup> onscreenPowerups = new ArrayList<>();
-    private ArrayList<Powerup> powerupsToRemove = new ArrayList<>();
+    private ArrayList<PowerupSprite> onscreenPowerupSprites = new ArrayList<>();
+    private ArrayList<PowerupSprite> powerupsToRemove = new ArrayList<>();
     private ArrayList<Polygon> myTriangles = new ArrayList<>();
     private ArrayList<Rectangle> myRotators = new ArrayList<>();
     private LinkedList<ActivePowerup> powerupTimeTracker = new LinkedList<>();
@@ -86,31 +87,12 @@ public class Main extends Application {
     private Stage primaryStage;
     private boolean bombPowerupActive = false;
 
-    /**
-     * stores the powerups while they are active to keep track of their start times and powerup types
-     */
-    public class ActivePowerup{
-        int powerupType;
-        long startTime = System.currentTimeMillis();
-        public ActivePowerup(int powerupType){
-            this.powerupType = powerupType;
-        }
-
-        public int getPowerupType() {
-            return powerupType;
-        }
-
-        public long getStartTime() {
-            return startTime;
-        }
-    }
-
 
     private void clearAllStorage(){
         myRotators.clear();
         myBlocks.clear();
         blocksToRemove.clear();
-        onscreenPowerups.clear();
+        onscreenPowerupSprites.clear();
         powerupsToRemove.clear();
         powerupTimeTracker.clear();
         myTriangles.clear();
@@ -135,6 +117,43 @@ public class Main extends Application {
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.getKeyFrames().add(frame);
         animation.play();
+    }
+
+    /**
+     * Handles all of the updating of the scene. This loops continuously
+     * @param elapsedTime
+     */
+    private void step(double elapsedTime){
+        myBall.move(elapsedTime);
+
+        handleRotatorRotationsAndBounces();
+
+        handleWallInteractions();
+
+        handleBouncingOffPaddle();
+
+        detectBlockCollision();
+        removeDeadBlocks();
+
+        handleOnscreenPowerups(elapsedTime);
+        removeDeadPowerups();
+
+        trackActivePowerups();
+        removeInactivePowerups();
+
+        detectTriangleCollisions();
+
+        generateLabel(scoreLabels, "Score: " + String.valueOf(score),
+                Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),850,50);
+        generateLabel(livesLabels, "Lives: " + String.valueOf(lives),
+                Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),70,50);
+        if ((level< NUM_LEVELS + 1)&&(level>0)) {
+            generateLabel(levelLabels, "Level:" + String.valueOf(level), Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),70,660);
+        }
+
+        changeSceneIfTriggered();
+
+        setMultiplier();
     }
 
     private Scene initializeScene(int width, int height, Paint background){
@@ -254,57 +273,11 @@ public class Main extends Application {
         myBlocks.add(b);
     }
 
-    private void step(double elapsedTime){
-        myBall.move(elapsedTime);
-
-        handleRotatorRotationsAndBounces();
-
-        handleWallInteractions();
-
-        handleBouncingOffPaddle();
-
-        detectBlockCollision();
-        removeDeadBlocks();
-
-        handleOnscreenPowerups(elapsedTime);
-        removeDeadPowerups();
-
-        trackActivePowerups();
-        removeInactivePowerups();
-
-        detectTriangleCollisions();
-
-        generateLabel(scoreLabels, "Score: " + String.valueOf(score),
-                Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),850,50);
-        generateLabel(livesLabels, "Lives: " + String.valueOf(lives),
-                Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),70,50);
-        if ((level<4)&&(level>0)) {
-            generateLabel(levelLabels, "Level:" + String.valueOf(level), Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25),70,660);
-        }
-
-        changeSceneIfTriggered();
-
-        setMultiplier();
-    }
-
     private void setMultiplier() {
         if (popsSinceMultiplier >= 5){
             multiplier +=1;
             popsSinceMultiplier = 0;
         }
-    }
-
-    private void generateScoreLabel() {
-        for (Text scorelabel: scoreLabels){
-            root.getChildren().remove(scorelabel);
-        }
-        scoreLabels.clear();
-        Text scoreLabel = new Text("Score: " + String.valueOf(score));
-        scoreLabel.setFont(Font.font("arial", FontWeight.BLACK, FontPosture.REGULAR, 25));
-        scoreLabel.setX(850);
-        scoreLabel.setY(50);
-        root.getChildren().add(scoreLabel);
-        scoreLabels.add(scoreLabel);
     }
 
     private void generateLabel(ArrayList<Text> labels, String s, Font font, double x, double y) {
@@ -349,14 +322,14 @@ public class Main extends Application {
     }
 
     private void removeDeadPowerups() {
-        for (Powerup p : powerupsToRemove) {
-            onscreenPowerups.remove(p);
+        for (PowerupSprite p : powerupsToRemove) {
+            onscreenPowerupSprites.remove(p);
         }
         powerupsToRemove.clear();
     }
 
     private void handleOnscreenPowerups(double elapsedTime) {
-        for (Powerup p : onscreenPowerups) {
+        for (PowerupSprite p : onscreenPowerupSprites) {
             p.move(elapsedTime);
             if (p.isOffScreen(SCREEN_HEIGHT)) {
                 p.killPowerup();
@@ -366,7 +339,7 @@ public class Main extends Application {
         }
     }
 
-    private void ifPaddleCatchesPowerup(Powerup p) {
+    private void ifPaddleCatchesPowerup(PowerupSprite p) {
         if (myPaddle.getView().getBoundsInParent().intersects(p.getView().getBoundsInParent())) {
             bombPowerupActive = true;
             powerupTimeTracker.add(new ActivePowerup(p.getPowerupType()));
@@ -483,9 +456,9 @@ public class Main extends Application {
         if (b.isBlockDead()){
             int powerupType = b.popBlock();
             if (powerupType <3){
-                Powerup newestPowerup = new Powerup(getPowerupImage(powerupType),b.getCenterxPos(),b.getCenteryPos(),powerupType);
-                root.getChildren().add(newestPowerup.getView());
-                onscreenPowerups.add(newestPowerup);
+                PowerupSprite newestPowerupSprite = new PowerupSprite(getPowerupImage(powerupType),b.getCenterxPos(),b.getCenteryPos(),powerupType);
+                root.getChildren().add(newestPowerupSprite.getView());
+                onscreenPowerupSprites.add(newestPowerupSprite);
             }
             blocksToRemove.add(b);
         }
@@ -496,25 +469,25 @@ public class Main extends Application {
 
     private void activatePowerups(ActivePowerup powerup){
 
-        if (powerup.getPowerupType()==Block.INCREASE_BALL_SIZE){
-            myBall.changeBallSize(2);
+        if (powerup.getPowerupType()== PowerupSprite.INCREASE_BALL_SIZE){
+            myBall.changeBallSize(Ball.BIG_BALL_SIZE);
         }
-        if (powerup.getPowerupType()==Block.BOMB){
+        if (powerup.getPowerupType()== PowerupSprite.BOMB){
             bombPowerupActive = true;
         }
-        if (powerup.getPowerupType()==Block.DOUBLE_POPPER){
+        if (powerup.getPowerupType()== PowerupSprite.DOUBLE_POPPER){
             myBall.changePopStrength(2);
         }
     }
 
     private void deactivatePowerups(ActivePowerup powerup){
-        if (powerup.getPowerupType()==Block.INCREASE_BALL_SIZE){
-            myBall.changeBallSize(1);
+        if (powerup.getPowerupType()== PowerupSprite.INCREASE_BALL_SIZE){
+            myBall.changeBallSize(Ball.SMALL_BALL_SIZE);
         }
-        if (powerup.getPowerupType()==Block.BOMB){
+        if (powerup.getPowerupType()== PowerupSprite.BOMB){
             bombPowerupActive = false;
         }
-        if (powerup.getPowerupType()==Block.DOUBLE_POPPER){
+        if (powerup.getPowerupType()== PowerupSprite.DOUBLE_POPPER){
             myBall.changePopStrength(1);
         }
     }
@@ -555,13 +528,13 @@ public class Main extends Application {
             togglePaddleSpeed();
         }
         if (code == KeyCode.DIGIT3){
-            powerupTimeTracker.add(new ActivePowerup(Block.INCREASE_BALL_SIZE));
+            powerupTimeTracker.add(new ActivePowerup(PowerupSprite.INCREASE_BALL_SIZE));
         }
         if (code == KeyCode.DIGIT4){
-            powerupTimeTracker.add(new ActivePowerup(Block.BOMB));
+            powerupTimeTracker.add(new ActivePowerup(PowerupSprite.BOMB));
         }
         if (code == KeyCode.DIGIT5){
-            powerupTimeTracker.add(new ActivePowerup(Block.DOUBLE_POPPER));
+            powerupTimeTracker.add(new ActivePowerup(PowerupSprite.DOUBLE_POPPER));
         }
     }
 
